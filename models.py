@@ -2,6 +2,8 @@ import torch
 from torch import nn
 from itertools import chain
 from abc import ABC, abstractmethod
+from utils import gen_dataclass
+from trainer import Trainer
 
 fn_rec_criteria = nn.MSELoss()
 fn_bce_criteria = nn.BCELoss()
@@ -76,6 +78,19 @@ class DemParModel(AbstractModel):
         return self.autoencoder.encoder(data)
 
 
+class DP:
+    def __init__(self, **kwargs):
+        args = gen_dataclass(kwargs)
+        self.model = DemParModel(args)
+        self.trainer = Trainer(self.model, args)
+
+    def fit(self, X_train, y_train):
+        self.trainer.train_process(X_train, y_train)
+
+    def score(self, X_test, y_test):
+        return 1 - self.trainer.calc_fair_metrics(X_test, y_test)['test'][0][2]
+
+
 class AutoEncoder(nn.Module):
     def __init__(self, args):
         super(AutoEncoder, self).__init__()
@@ -146,3 +161,4 @@ class MLP(nn.Module):
         """Activates gradient computation through MLP parameters"""
         for para in self.parameters():
             para.requires_grad = True
+

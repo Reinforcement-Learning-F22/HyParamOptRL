@@ -1,5 +1,6 @@
 import itertools
 import numpy as np
+from progressbar import progressbar
 from utils import epsilon_greedy_policy
 
 
@@ -24,6 +25,9 @@ class ObjModel:
         self.model = self.base_model(**kwargs)
         return state
 
+    def get_params_by_state(self, state):
+        return {k: v for k, v in zip(self.params_names, self.comb[state])}
+
     def train(self):
         self.model.fit(self.data[0], self.data[1])
 
@@ -47,17 +51,20 @@ def train(epsilon, decay_rate, env, max_steps, qtable, gamma, learning_rate):
     reward_best = 0
     # Reset the environment
     state = env.reset()
+    penalty = 10
+    action_best = 0
 
     # repeat
-    for step in range(max_steps):
+    for step in progressbar(range(max_steps)):
         # Choose the action At using epsilon greedy policy
         action = epsilon_greedy_policy(qtable, state, epsilon * np.exp(-decay_rate * step))
 
         # Take action At and observe Rt+1 and St+1
         # Take the action (a) and observe the outcome state(s') and reward (r)
         new_state, reward_ = env.step(action)
-        reward = reward_ if reward_ >= reward_old else (reward_ - reward_old) * 10
-        if reward_ > reward_best:
+        reward = reward_ if reward_ >= reward_old else (reward_ - reward_old) * penalty
+        if reward_ >= reward_best:
+            action_best = action
             if step > 0:
                 reward *= 2
             reward_best = reward_
@@ -73,4 +80,4 @@ def train(epsilon, decay_rate, env, max_steps, qtable, gamma, learning_rate):
         state = new_state
         episode_rewards[0].append(reward_)
         episode_rewards[1].append(reward)
-    return qtable, episode_rewards
+    return qtable, episode_rewards, action_best
