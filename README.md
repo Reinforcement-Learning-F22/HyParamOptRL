@@ -33,9 +33,9 @@ or download ```.zip``` file
 
 4) To run modified Sarsa algorithm you can use:
 
-``` main.ipynb ``` — with AI Fairness model
+    ``` main.ipynb ``` — with AI Fairness model
 
-``` descrete_part_model_defect_recognition.ipynb ``` — with defect classification model
+    ``` descrete_part_model_defect_recognition.ipynb ``` — with defect classification model
 
 Contact the project developers if you want to download the datasets
 
